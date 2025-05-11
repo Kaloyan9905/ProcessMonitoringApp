@@ -1,7 +1,8 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import render
-from .process_collector import collector
+
+from ProcessMonitoringApp.processes_tracker.process_collector import collector
 
 
 class RunningProcessesAPIView(APIView):

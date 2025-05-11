@@ -9,6 +9,7 @@ async function loadData() {
     const sortOrder = currentSort.order ? 'asc' : 'desc';
     const url = `/api/processes/?sort=${sortKey}&order=${sortOrder}&filter=${encodeURIComponent(currentFilter)}`;
     const response = await fetch(url);
+
     processData = await response.json();
     renderTable(processData);
 }
@@ -16,6 +17,7 @@ async function loadData() {
 function renderTable(data) {
     const table = document.getElementById('processTable');
     const fragment = document.createDocumentFragment();
+
     data.forEach((proc, index) => {
         const row = document.createElement('tr');
         row.classList.add(index % 2 === 0 ? 'bg-gray-50' : 'bg-gray-100');
@@ -27,6 +29,7 @@ function renderTable(data) {
         `;
         fragment.appendChild(row);
     });
+
     table.innerHTML = '';
     table.appendChild(fragment);
 }
@@ -60,6 +63,7 @@ function resetFilters() {
 
 function setRefreshInterval() {
     const interval = parseInt(document.getElementById('intervalInput').value, 10);
+
     if (interval > 0) {
         clearInterval(refreshTimeout);
         refreshInterval = interval * 1000;
