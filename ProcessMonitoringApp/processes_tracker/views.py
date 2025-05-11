@@ -2,6 +2,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import render
 
+from ProcessMonitoringApp.processes_tracker.anomaly_detection import alert_manager
 from ProcessMonitoringApp.processes_tracker.process_collector import collector
 
 
@@ -24,6 +25,12 @@ class RunningProcessesAPIView(APIView):
             pass
 
         return Response(processes)
+
+
+class AnomalyAlertsAPIView(APIView):
+    def get(self, request, *args, **kwargs):
+        alerts = alert_manager.get_recent_alerts()
+        return Response(alerts)
 
 
 def index(request):

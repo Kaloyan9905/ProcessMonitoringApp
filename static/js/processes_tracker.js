@@ -1,17 +1,21 @@
 let processData = [];
-let currentSort = {key: 'pid', order: true};
+let currentSort = { key: 'pid', order: true };
 let currentFilter = '';
 let refreshInterval = 2000;
-let refreshTimeout;
+let refreshTimer;
 
 async function loadData() {
     const sortKey = currentSort.key;
     const sortOrder = currentSort.order ? 'asc' : 'desc';
     const url = `/api/processes/?sort=${sortKey}&order=${sortOrder}&filter=${encodeURIComponent(currentFilter)}`;
-    const response = await fetch(url);
 
-    processData = await response.json();
-    renderTable(processData);
+    try {
+        const response = await fetch(url);
+        processData = await response.json();
+        renderTable(processData);
+    } catch (error) {
+        console.error("Error loading process data:", error);
+    }
 }
 
 function renderTable(data) {
@@ -34,6 +38,34 @@ function renderTable(data) {
     table.appendChild(fragment);
 }
 
+let debounceTimeout;
+
+async function fetchAlerts() {
+    if (debounceTimeout) {
+        clearTimeout(debounceTimeout);
+    }
+
+    debounceTimeout = setTimeout(async () => {
+        try {
+            const response = await fetch('/api/anomalies/');
+            const alerts = await response.json();
+            console.log(alerts);
+
+            if (alerts.length > 0) {
+                alerts.forEach(alert => {
+                    Toastify({
+                        text: `${alert.title}: ${alert.message}`,
+                        duration: 5000,
+                        backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                    }).showToast();
+                });
+            }
+        } catch (error) {
+            console.error("Error fetching alerts:", error);
+        }
+    }, 1000);
+}
+
 function sortBy(key) {
     if (currentSort.key === key) {
         currentSort.order = !currentSort.order;
@@ -44,28 +76,17 @@ function sortBy(key) {
     loadData();
 }
 
-document.getElementById('sortPid').addEventListener('click', () => sortBy('pid'));
-document.getElementById('sortName').addEventListener('click', () => sortBy('name'));
-document.getElementById('sortCpu').addEventListener('click', () => sortBy('cpu_percent'));
-document.getElementById('sortMem').addEventListener('click', () => sortBy('memory_percent'));
-
-document.getElementById('filterInput').addEventListener('input', (e) => {
-    currentFilter = e.target.value;
-    loadData();
-});
-
 function resetFilters() {
     currentFilter = '';
-    currentSort = {key: 'pid', order: true};
+    currentSort = { key: 'pid', order: true };
     document.getElementById('filterInput').value = '';
     loadData();
 }
 
 function setRefreshInterval() {
     const interval = parseInt(document.getElementById('intervalInput').value, 10);
-
     if (interval > 0) {
-        clearInterval(refreshTimeout);
+        clearInterval(refreshTimer);
         refreshInterval = interval * 1000;
         startDataRefresh();
     }
@@ -73,8 +94,26 @@ function setRefreshInterval() {
 
 function startDataRefresh() {
     loadData();
-    refreshTimeout = setInterval(loadData, refreshInterval);
+    fetchAlerts();
+    refreshTimer = setInterval(() => {
+        loadData();
+        fetchAlerts();
+    }, refreshInterval);
 }
 
-loadData();
-startDataRefresh();
+// Event Listeners
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('sortPid').addEventListener('click', () => sortBy('pid'));
+    document.getElementById('sortName').addEventListener('click', () => sortBy('name'));
+    document.getElementById('sortCpu').addEventListener('click', () => sortBy('cpu_percent'));
+    document.getElementById('sortMem').addEventListener('click', () => sortBy('memory_percent'));
+
+    document.getElementById('filterInput').addEventListener('input', (e) => {
+        currentFilter = e.target.value;
+        loadData();
+    });
+
+    document.getElementById('intervalInput')?.addEventListener('change', setRefreshInterval);
+
+    startDataRefresh();
+});

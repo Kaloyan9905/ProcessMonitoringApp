@@ -4,14 +4,18 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Live Process List</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 </head>
 <body class="bg-white text-gray-800 p-6">
 <h2 class="text-3xl font-semibold text-center mb-6 text-gray-800">Running Processes</h2>
 
 <div class="flex justify-center mb-6">
     <div class="overflow-x-auto w-full max-w-4xl bg-white p-6 rounded-lg shadow-lg">
+        <!-- Filter & Interval Section -->
         <div class="my-4 flex gap-4 items-center justify-between">
             <div class="flex gap-2 items-center">
                 <input id="filterInput"
@@ -20,7 +24,8 @@
                        class="p-3 border border-blue-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none w-80"
                 />
                 <button onclick="resetFilters()"
-                        class="transition duration-300 ease-in-out bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300">
+                        class="transition duration-300 ease-in-out bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300"
+                        aria-label="Reset filters">
                     Reset
                 </button>
             </div>
@@ -29,32 +34,39 @@
                 <input type="number" id="intervalInput" min="1" value="2"
                        class="p-2 border border-blue-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none w-24"/>
                 <button onclick="setRefreshInterval()"
-                        class="transition duration-300 ease-in-out bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300">
+                        class="transition duration-300 ease-in-out bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300"
+                        aria-label="Set refresh interval">
                     Set Interval
                 </button>
             </div>
         </div>
 
+        <!-- Process Table -->
         <table class="min-w-full border border-blue-300 rounded-lg overflow-hidden shadow-md bg-white">
             <thead class="bg-blue-100 text-blue-800">
             <tr>
-                <th id="sortPid" class="cursor-pointer py-3 px-4 text-sm font-semibold text-left hover:bg-blue-200">PID
-                    ⬍
+                <th id="sortPid" class="cursor-pointer py-3 px-4 text-sm font-semibold text-left hover:bg-blue-200" aria-label="Sort by PID">
+                    PID <span id="arrowPid">⬍</span>
                 </th>
-                <th id="sortName" class="cursor-pointer py-3 px-4 text-sm font-semibold text-left hover:bg-blue-200">
-                    Name ⬍
+                <th id="sortName" class="cursor-pointer py-3 px-4 text-sm font-semibold text-left hover:bg-blue-200" aria-label="Sort by Name">
+                    Name <span id="arrowName">⬍</span>
                 </th>
-                <th id="sortCpu" class="cursor-pointer py-3 px-4 text-sm font-semibold text-left hover:bg-blue-200">CPU
-                    % ⬍
+                <th id="sortCpu" class="cursor-pointer py-3 px-4 text-sm font-semibold text-left hover:bg-blue-200" aria-label="Sort by CPU">
+                    CPU % <span id="arrowCpu">⬍</span>
                 </th>
-                <th id="sortMem" class="cursor-pointer py-3 px-4 text-sm font-semibold text-left hover:bg-blue-200">
-                    Memory % ⬍
+                <th id="sortMem" class="cursor-pointer py-3 px-4 text-sm font-semibold text-left hover:bg-blue-200" aria-label="Sort by Memory">
+                    Memory % <span id="arrowMem">⬍</span>
                 </th>
             </tr>
             </thead>
             <tbody id="processTable" class="text-gray-800"></tbody>
         </table>
     </div>
+</div>
+
+<!-- Loading Indicator -->
+<div id="loadingIndicator" class="hidden absolute inset-0 flex justify-center items-center bg-gray-50 bg-opacity-50 z-10">
+    <span class="text-xl text-blue-600">Loading...</span>
 </div>
 
 <script src="{% static 'js/processes_tracker.js' %}"></script>
